@@ -20,6 +20,7 @@ public class Usuario {
     private Long id;
     private String nome;
     private String email;
+    private String senha;
     private String dataNascimento;
     private String telefone;
 
@@ -32,6 +33,7 @@ public class Usuario {
     public Usuario(DadosCadastroUsuario dados) {
         this.nome = dados.nome();
         this.email = dados.email();
+        this.senha = dados.senha();
         this.dataNascimento = dados.dataNascimento();
         this.telefone = dados.telefone();
         this.aceitaAviso = dados.aceitaAviso();

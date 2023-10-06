@@ -12,6 +12,8 @@ public record DadosCadastroUsuario(
         @NotBlank @Email
         String email,
         @NotBlank
+        String senha,
+        @NotBlank
         String dataNascimento,
         @NotBlank
         String telefone,
