@@ -23,6 +23,7 @@ public class Usuario {
     private String senha;
     private String dataNascimento;
     private String telefone;
+    private String email_confirmado;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "aceita_aviso")
@@ -38,5 +39,6 @@ public class Usuario {
         this.telefone = dados.telefone();
         this.aceitaAviso = dados.aceitaAviso();
         this.endereco = new Endereco(dados.endereco());
+        this.email_confirmado = dados.email_confirmado();
     }
 }

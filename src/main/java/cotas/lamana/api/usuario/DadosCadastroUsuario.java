@@ -20,6 +20,8 @@ public record DadosCadastroUsuario(
         @NotNull
         AceitaAviso aceitaAviso,
         @NotNull @Valid
-        DadosEndereco endereco) {
+        DadosEndereco endereco,
+        @NotNull @Valid
+        String email_confirmado
 
-}
+) { }

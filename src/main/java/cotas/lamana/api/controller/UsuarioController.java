@@ -27,7 +27,7 @@ public class UsuarioController {
     public void cadastrar(@RequestBody @Valid DadosCadastroUsuario dados) {
 
         repository.save(new Usuario(dados));
-        service.sendMail(dados.email(), "talestrejuli@gmail.com", "Confirmação de cadastro", "Teste", false);
+        //service.sendMail(dados.email(), "talestrejuli@gmail.com", "Confirmação de cadastro", "Teste", false);
     }
 
     @GetMapping

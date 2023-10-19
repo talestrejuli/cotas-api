@@ -1,0 +1,1 @@
+ALTER TABLE usuarios ADD email_confirmado char(2) NOT NULL;
