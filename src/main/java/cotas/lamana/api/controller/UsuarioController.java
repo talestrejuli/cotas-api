@@ -25,8 +25,17 @@ public class UsuarioController {
     @Transactional
     @RequestMapping("/cadastrar")
     public void cadastrar(@RequestBody @Valid DadosCadastroUsuario dados) {
-
         usuario_service.cadastrarUsuario(dados);
+
     }
+    /*
+    @GetMapping
+    @RequestMapping("/logar")
+    public void realizarLogin(@RequestBody @Valid DadosCadastroUsuario dados) {
+        usuario_service.realizarLogin();
+
+    }
+
+     */
 
 }

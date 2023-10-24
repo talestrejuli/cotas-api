@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.Optional;
+
 @Service
 public class UsuarioService {
 
@@ -20,7 +22,21 @@ public class UsuarioService {
 
     public void cadastrarUsuario (@RequestBody @Valid DadosCadastroUsuario dados) {
         repository.save(new Usuario(dados));
-        //email_service.sendMail(dados.email(), "talestrejuli@gmail.com", "Confirmação de cadastro", "Teste", false);
+        email_service.sendMail(dados.email(), "talestrejuli@gmail.com", "Confirmação de cadastro", "Teste", false);
+    }
+/*
+    public ResponseEntity<?> realizarLogin (String email, String senha) {
+        Optional<Usuario> optionalUsuario = repository.findByEmail(email);
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
+            if (passwordEncoder.matches(senha, usuario.getSenha())) {
+                // A senha está correta
+                // Aqui você pode criar e retornar um token JWT, por exemplo.
+                return ResponseEntity.ok("Login realizado com sucesso");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos");
     }
 
+ */
 }
