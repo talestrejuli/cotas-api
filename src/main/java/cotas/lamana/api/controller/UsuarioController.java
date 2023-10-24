@@ -28,6 +28,14 @@ public class UsuarioController {
         usuario_service.cadastrarUsuario(dados);
 
     }
+
+    @PostMapping
+    @Transactional
+    @RequestMapping("/enviar-email")
+    public void enviarEmail(@RequestBody String emailDestinatario) {
+        usuario_service.enviarEmailDeConfirmacao(emailDestinatario);
+    }
+
     /*
     @GetMapping
     @RequestMapping("/logar")
