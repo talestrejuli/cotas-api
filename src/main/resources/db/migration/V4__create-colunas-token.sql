@@ -1,0 +1,3 @@
+ALTER TABLE usuarios
+ADD COLUMN token VARCHAR(255),
+ADD COLUMN data_expiracao VARCHAR(255);

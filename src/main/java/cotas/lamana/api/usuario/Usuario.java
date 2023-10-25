@@ -2,14 +2,12 @@ package cotas.lamana.api.usuario;
 
 import cotas.lamana.api.endereco.Endereco;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Table(name = "usuarios")
 @Entity(name = "Usuario")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -24,6 +22,8 @@ public class Usuario {
     private String dataNascimento;
     private String telefone;
     private String email_confirmado;
+    private String token;
+    private String data_expiracao;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "aceita_aviso")

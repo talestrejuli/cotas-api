@@ -5,6 +5,7 @@ import cotas.lamana.api.service.email.EnviarEmailService;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
 import cotas.lamana.api.usuario.Usuario;
 import cotas.lamana.api.usuario.UsuarioRepository;
+import cotas.lamana.api.util.TokenGenerator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -15,6 +16,9 @@ import org.springframework.core.io.ResourceLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 
 @Service  // Indica que esta classe é um serviço Spring
@@ -48,9 +52,41 @@ public class UsuarioService {
         }
     }
 
+    public void saveTokenToDatabase(Long userId, String token) {
+        // Busca o usuário pelo ID
+        Optional<Usuario> optionalUsuario = repository.findById(userId);
+
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
+
+            // Configura o token e a data de expiração
+            usuario.setToken(token);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 24);  // 24 horas de expiração
+            Date expiryDate = calendar.getTime();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String expiryDateString = sdf.format(expiryDate);
+
+            // Atualiza o usuário no banco de dados
+            repository.save(usuario);
+        } else {
+            // Trate o caso em que o usuário não é encontrado, se necessário
+        }
+    }
+
     // Método para cadastrar um novo usuário
     public void cadastrarUsuario (@RequestBody @Valid DadosCadastroUsuario dados) {
-        repository.save(new Usuario(dados));  // Salva o novo usuário no banco de dados
+        // Salva o novo usuário no banco de dados e guarda o retorno em uma variável
+        Usuario newUser = repository.save(new Usuario(dados));
+
+        // Gera um token único
+        String token = TokenGenerator.generateToken();
+
+        // Salva o token no banco de dados com ID do usuário e a data de expiração
+        saveTokenToDatabase(newUser.getId(), token);
+
         enviarEmailDeConfirmacao(dados.email());  // Chama o método para enviar o e-mail de confirmação
     }
 
