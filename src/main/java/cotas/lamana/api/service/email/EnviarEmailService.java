@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.SimpleMailMessage;
 
@@ -19,7 +20,7 @@ public class EnviarEmailService {
         // Envia email
         sendMail(to, from, subject, html, true);
     }
-
+    @Async
     public void sendMail(String to, String from, String subject, String text, boolean isHtml) {
         // Trata erro
         try {

@@ -1,21 +1,17 @@
 package cotas.lamana.api.util;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import java.util.Date;
+import java.security.SecureRandom;
 
 public class TokenGenerator {
-    public static String generateToken() {
-        Algorithm algorithm = Algorithm.HMAC256("secreto");
-        String token = JWT.create()
-                .withIssuer("seuApp")
-                .withExpiresAt(new Date(System.currentTimeMillis() + 3600 * 1000))  // 1 hora de expiração
-                .sign(algorithm);
-        return token;
-    }
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int TOKEN_LENGTH = 20;
+    private static final SecureRandom random = new SecureRandom();
 
-    public static void main(String[] args) {
-        String token = generateToken();
-        System.out.println("Token gerado: " + token);
+    public static String generateToken() {
+        StringBuilder token = new StringBuilder(TOKEN_LENGTH);
+        for (int i = 0; i < TOKEN_LENGTH; i++) {
+            token.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        }
+        return token.toString();
     }
 }

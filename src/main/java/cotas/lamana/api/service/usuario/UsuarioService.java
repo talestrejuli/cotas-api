@@ -52,42 +52,27 @@ public class UsuarioService {
         }
     }
 
-    public void saveTokenToDatabase(Long userId, String token) {
-        // Busca o usuário pelo ID
-        Optional<Usuario> optionalUsuario = repository.findById(userId);
-
-        if (optionalUsuario.isPresent()) {
-            Usuario usuario = optionalUsuario.get();
-
-            // Configura o token e a data de expiração
-            usuario.setToken(token);
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.HOUR, 24);  // 24 horas de expiração
-            Date expiryDate = calendar.getTime();
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String expiryDateString = sdf.format(expiryDate);
-
-            // Atualiza o usuário no banco de dados
-            repository.save(usuario);
-        } else {
-            // Trate o caso em que o usuário não é encontrado, se necessário
-        }
-    }
-
     // Método para cadastrar um novo usuário
     public void cadastrarUsuario (@RequestBody @Valid DadosCadastroUsuario dados) {
-        // Salva o novo usuário no banco de dados e guarda o retorno em uma variável
-        Usuario newUser = repository.save(new Usuario(dados));
+        Usuario novoDados = repository.save(new Usuario(dados));  // Salva o novo usuário
 
         // Gera um token único
         String token = TokenGenerator.generateToken();
 
-        // Salva o token no banco de dados com ID do usuário e a data de expiração
-        saveTokenToDatabase(newUser.getId(), token);
+        // Define a data de expiração
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, 24);  // 24 horas de expiração
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String expiryDateString = sdf.format(calendar.getTime());
 
-        enviarEmailDeConfirmacao(dados.email());  // Chama o método para enviar o e-mail de confirmação
+        // Atualiza o novo usuário com o token e a data de expiração
+        novoDados.setToken(token);
+        novoDados.setData_expiracao(expiryDateString);
+
+        // Salva o usuário atualizado no banco de dados
+        repository.save(novoDados);
+
+        enviarEmailDeConfirmacao(dados.email());  // Envia o e-mail de confirmação
     }
 
     /*
