@@ -2,12 +2,14 @@ package cotas.lamana.api.service.usuario;
 
 // Importações necessárias
 import cotas.lamana.api.service.email.EnviarEmailService;
+import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
 import cotas.lamana.api.usuario.Usuario;
 import cotas.lamana.api.usuario.UsuarioRepository;
 import cotas.lamana.api.util.TokenGenerator;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -16,6 +18,7 @@ import org.springframework.core.io.ResourceLoader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,6 +36,9 @@ public class UsuarioService {
     @Autowired  // Injeção de dependência para o ResourceLoader
     private ResourceLoader resourceLoader;
 
+    @Value("${app.domainUrl}")
+    private String domainUrl;
+
     // Método para ler um arquivo HTML e retornar seu conteúdo como uma String
     public String readHtmlFile(String path) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:" + path);
@@ -42,9 +48,13 @@ public class UsuarioService {
     }
 
     // Método para enviar e-mail de confirmação
-    public void enviarEmailDeConfirmacao(String emailDestinatario) {
+    public void enviarEmailDeConfirmacao(String emailDestinatario, String token) {
         try {
             String htmlContent = readHtmlFile("templates/email-template.html");
+
+            String confirmacaoUrl = domainUrl + "/confirmar-email?token=" + token;
+            htmlContent = htmlContent.replace("{confirmacaoUrl}", confirmacaoUrl);
+
             email_service.sendMail(emailDestinatario, "talestrejuli@gmail.com", "Confirmação de cadastro", htmlContent, true);
         } catch (IOException e) {
             // Loga o erro para depuração
@@ -58,6 +68,7 @@ public class UsuarioService {
 
         // Gera um token único
         String token = TokenGenerator.generateToken();
+        String confirmacaoUrl = domainUrl + "/confirmar-email?token=" + token;
 
         // Define a data de expiração
         Calendar calendar = Calendar.getInstance();
@@ -72,8 +83,32 @@ public class UsuarioService {
         // Salva o usuário atualizado no banco de dados
         repository.save(novoDados);
 
-        enviarEmailDeConfirmacao(dados.email());  // Envia o e-mail de confirmação
+        enviarEmailDeConfirmacao(dados.email(), token);  // Envia o e-mail de confirmação
     }
+
+    public boolean validarToken(String token) throws TokenExpiradoException {
+        Optional<Usuario> optionalUsuario = repository.findByToken(token);
+
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date expiryDate = sdf.parse(usuario.getData_expiracao());
+                if (new Date().before(expiryDate)) {
+                    return true;
+                } else {
+                    throw new TokenExpiradoException("Token expirado");
+                }
+            } catch (ParseException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+
 
     /*
     // Método para realizar o login (comentado no momento)
