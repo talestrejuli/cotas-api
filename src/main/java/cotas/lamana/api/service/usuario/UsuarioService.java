@@ -39,6 +39,9 @@ public class UsuarioService {
     @Value("${app.domainUrl}")
     private String domainUrl;
 
+    @Value("${app.domaiApinUrl}")
+    private String domaiApinUrl;
+
     // Método para ler um arquivo HTML e retornar seu conteúdo como uma String
     public String readHtmlFile(String path) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:" + path);
@@ -52,7 +55,7 @@ public class UsuarioService {
         try {
             String htmlContent = readHtmlFile("templates/email-template.html");
 
-            String confirmacaoUrl = domainUrl + "/confirmar-email?token=" + token;
+            String confirmacaoUrl = domaiApinUrl + "/usuarios/confirmar-email?token=" + token;
             htmlContent = htmlContent.replace("{confirmacaoUrl}", confirmacaoUrl);
 
             email_service.sendMail(emailDestinatario, "talestrejuli@gmail.com", "Confirmação de cadastro", htmlContent, true);

@@ -37,15 +37,15 @@ public class UsuarioController {
     public ResponseEntity<?> confirmarEmail(@RequestParam String token, HttpServletResponse httpServletResponse) {
         try {
             if (usuario_service.validarToken(token)) {
-                httpServletResponse.sendRedirect(domainUrl + "/confirmar-email");
+                httpServletResponse.sendRedirect(domainUrl + "/#/confirmar-email");
                 return ResponseEntity.ok().build();
             } else {
-                httpServletResponse.sendRedirect(domainUrl + "/login");
+                httpServletResponse.sendRedirect(domainUrl + "/#/login");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido");
             }
         } catch (TokenExpiradoException e) {
             try {
-                httpServletResponse.sendRedirect(domainUrl + "/login");
+                httpServletResponse.sendRedirect(domainUrl + "/#/login");
             } catch (IOException ioException) {
                 // Tratar erro de redirecionamento aqui
             }
@@ -55,7 +55,6 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao redirecionar");
         }
     }
-
 
     /*
     @GetMapping
