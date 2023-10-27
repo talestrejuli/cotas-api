@@ -56,6 +56,17 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/reenviar-email")
+    public ResponseEntity<?> reenviarEmail(@RequestBody String email) {
+        try {
+            usuario_service.reenviarEmailDeConfirmacao(email);
+            return ResponseEntity.ok("E-mail reenviado com sucesso");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao reenviar e-mail");
+        }
+    }
+
+
     /*
     @GetMapping
     @RequestMapping("/logar")

@@ -99,6 +99,8 @@ public class UsuarioService {
             try {
                 Date expiryDate = sdf.parse(usuario.getData_expiracao());
                 if (new Date().before(expiryDate)) {
+                    usuario.setEmail_confirmado("S");
+                    repository.save(usuario);
                     return true;
                 } else {
                     throw new TokenExpiradoException("Token expirado");
@@ -108,6 +110,35 @@ public class UsuarioService {
             }
         }
         return false;
+    }
+
+    //Método para reenviar e-mail de confirmação
+    public void reenviarEmailDeConfirmacao(String email) {
+        Optional<Usuario> optionalUsuario = repository.findByEmail(email);
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
+
+            // Gera um novo token único
+            String novoToken = TokenGenerator.generateToken();
+
+            // Define a data de expiração
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 24);  // 24 horas de expiração
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String expiryDateString = sdf.format(calendar.getTime());
+
+            // Atualiza o novo usuário com o token e a data de expiração
+            usuario.setToken(novoToken);
+            usuario.setData_expiracao(expiryDateString);
+
+            // Salva o usuário atualizado no banco de dados
+            repository.save(usuario);
+
+            // Reenvia o e-mail de confirmação
+            enviarEmailDeConfirmacao(email, novoToken);
+        } else {
+            //tratamento de erro
+        }
     }
 
 
