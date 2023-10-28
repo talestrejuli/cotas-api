@@ -5,8 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
-import lombok.Setter;
 
 public record DadosCadastroUsuario(
         @NotBlank
@@ -28,4 +26,10 @@ public record DadosCadastroUsuario(
 
 ) {
 
+        public void setSenha(String encode) {
+        }
+
+        public CharSequence getSenha() {
+            return senha;
+        }
 }
