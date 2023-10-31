@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,6 +69,11 @@ public class UsuarioService {
     // Método para cadastrar um novo usuário
     public void cadastrarUsuario (@RequestBody @Valid DadosCadastroUsuario dados) {
         Usuario novoDados = repository.save(new Usuario(dados));  // Salva o novo usuário
+
+        //criptografa a senha
+        BCryptPasswordEncoder criptografar = new BCryptPasswordEncoder();
+        String senhaCriptografada = criptografar.encode(novoDados.getSenha());
+        novoDados.setSenha(senhaCriptografada);
 
         // Gera um token único
         String token = TokenGenerator.generateToken();
