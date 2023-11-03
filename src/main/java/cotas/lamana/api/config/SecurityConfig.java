@@ -15,6 +15,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/cadastrar")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/confirmar-email")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/esqueci-senha")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/reenviar-email")).permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

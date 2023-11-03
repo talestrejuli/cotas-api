@@ -63,6 +63,16 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<?> esqueciSenha(@RequestBody String email) {
+        try {
+            usuario_service.processarEsqueciSenha(email);
+            return ResponseEntity.ok("E-mail enviado com sucesso");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao enviar e-mail");
+        }
+    }
+
 
     /*
     @GetMapping

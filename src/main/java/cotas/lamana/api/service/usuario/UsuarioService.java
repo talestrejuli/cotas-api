@@ -2,6 +2,7 @@ package cotas.lamana.api.service.usuario;
 
 // Importações necessárias
 import cotas.lamana.api.service.email.EnviarEmailService;
+import cotas.lamana.api.service.exceptions.EmailNaoEncontradoException;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
 import cotas.lamana.api.usuario.Usuario;
@@ -43,6 +44,9 @@ public class UsuarioService {
     @Value("${app.domaiApinUrl}")
     private String domaiApinUrl;
 
+    @Value("$(spring.mail.username}")
+    private String emailRemetente;
+
     // Método para ler um arquivo HTML e retornar seu conteúdo como uma String
     public String readHtmlFile(String path) throws IOException {
         Resource resource = resourceLoader.getResource("classpath:" + path);
@@ -59,7 +63,7 @@ public class UsuarioService {
             String confirmacaoUrl = domaiApinUrl + "/usuarios/confirmar-email?token=" + token;
             htmlContent = htmlContent.replace("{confirmacaoUrl}", confirmacaoUrl);
 
-            email_service.sendMail(emailDestinatario, "talestrejuli@gmail.com", "Confirmação de cadastro", htmlContent, true);
+            email_service.sendMail(emailDestinatario, emailRemetente, "Confirmação de cadastro", htmlContent, true);
         } catch (IOException e) {
             // Loga o erro para depuração
             System.err.println("Ocorreu um erro ao ler o arquivo HTML ou enviar o e-mail: " + e.getMessage());
@@ -147,7 +151,49 @@ public class UsuarioService {
         }
     }
 
+    public void processarEsqueciSenha(String email) throws EmailNaoEncontradoException {
+        // Verifica se o e-mail está cadastrado no banco de dados
+        Optional<Usuario> optionalUsuario = repository.findByToken(email);
+        if (optionalUsuario.isPresent()) {
+            Usuario usuario = optionalUsuario.get();
 
+            // Gera um token único para redefinição de senha
+            String resetToken = TokenGenerator.generateToken();
+
+            // Define uma nova data de expiração do token
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 24);  // 24 horas de expiração
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String expiryDateString = sdf.format(calendar.getTime());
+
+            // Atualiza o novo usuário com o token e a data de expiração
+            usuario.setToken(resetToken);
+            usuario.setData_expiracao(expiryDateString);
+
+            // Salva o token e data de expiração atualizada no banco de dados
+            repository.save(usuario);
+
+            // Envia o e-mail de redefinição de senha
+            enviarEmailDeRedefinicaoSenha(email, resetToken);
+
+        } else  {
+            throw new EmailNaoEncontradoException("E-mail não cadastrado");
+        }
+
+    }
+
+    public void enviarEmailDeRedefinicaoSenha(String emailDestinatario, String token) {
+        try {
+            String htmlContent = readHtmlFile("templates/reset-password-email-template.html");
+
+            String resetUrl = domaiApinUrl + "/usuarios/resetar-senha?token=" + token;
+            htmlContent = htmlContent.replace("{resetUrl}", resetUrl);
+
+            email_service.sendMail(emailDestinatario, emailRemetente , "Redefinição de Senha", htmlContent, true);
+        } catch (IOException e) {
+            System.err.println("Ocorreu um erro ao ler o arquivo HTML ou enviar o e-mail: " + e.getMessage());
+        }
+    }
 
 
     /*
