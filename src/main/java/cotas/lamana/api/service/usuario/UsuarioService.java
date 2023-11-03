@@ -2,12 +2,12 @@ package cotas.lamana.api.service.usuario;
 
 // Importações necessárias
 import cotas.lamana.api.service.email.EnviarEmailService;
-import cotas.lamana.api.service.exceptions.EmailNaoEncontradoException;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
 import cotas.lamana.api.usuario.Usuario;
 import cotas.lamana.api.usuario.UsuarioRepository;
 import cotas.lamana.api.util.TokenGenerator;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +99,7 @@ public class UsuarioService {
         enviarEmailDeConfirmacao(dados.email(), token);  // Envia o e-mail de confirmação
     }
 
+    //Método para validar token
     public boolean validarToken(String token) throws TokenExpiradoException {
         Optional<Usuario> optionalUsuario = repository.findByToken(token);
 
@@ -198,6 +199,37 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
+    public Optional<String> atualizarSenha(String token, String novaSenha) {
+        Optional<Usuario> optionalUsuario = repository.findByToken(token);
+
+        if (optionalUsuario.isPresent()) {
+            // Encontrar o usuário pelo token
+            Usuario novoUsuario = optionalUsuario.get();
+
+            //Setar a nova senha ao usuário
+            novoUsuario.setSenha(novaSenha);
+
+            //criptografa a senha e salva no banco de dados
+            BCryptPasswordEncoder criptografar = new BCryptPasswordEncoder();
+            String senhaCriptografada = criptografar.encode(novoUsuario.getSenha());
+            novoUsuario.setSenha(senhaCriptografada);
+
+            // Salva a nova senha no banco de dados
+            repository.save(novoUsuario);
+
+            //Invalida o token
+            Calendar dataAtual = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String expiryDateString = sdf.format(dataAtual.getTime());
+
+            novoUsuario.setData_expiracao(expiryDateString);
+
+            return Optional.of("Senha alterada com sucesso");
+        } else {
+            return Optional.empty();
+        }
+    }
 
     /*
     // Método para realizar o login (comentado no momento)

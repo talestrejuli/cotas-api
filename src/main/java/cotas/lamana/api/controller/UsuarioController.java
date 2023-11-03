@@ -1,6 +1,7 @@
 package cotas.lamana.api.controller;
 
 import cotas.lamana.api.dto.EmailDTO;
+import cotas.lamana.api.dto.EsqueciSenhaRequestDTO;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.service.usuario.UsuarioService;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
@@ -74,8 +75,8 @@ public class UsuarioController {
                 httpServletResponse.sendRedirect(domainUrl + "/#/redefinir-senha?token=" + token );
                 return ResponseEntity.ok().build();
             } else {
-                httpServletResponse.sendRedirect(domainUrl + "/#/login");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido");
+                httpServletResponse.sendRedirect(domainUrl + "/#/login/");
+                return ResponseEntity.ok().build();
             }
         } catch (TokenExpiradoException e) {
             try {
@@ -90,12 +91,18 @@ public class UsuarioController {
         }
     }
 
+
     @PostMapping("/esqueci-senha")
     public ResponseEntity<?> esqueciSenha(@RequestBody EmailDTO email) {
         Optional<String> resultado = usuario_service.processarEsqueciSenha(email.getEmail());
         return resultado.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of("message", s))).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "E-mail não cadastrado")));
     }
 
+    @PostMapping("/registrar-nova-senha")
+    public ResponseEntity<?> registrarnNovaSenha(@RequestBody EsqueciSenhaRequestDTO senhaToken) {
+        Optional<String> resultado = usuario_service.atualizarSenha(senhaToken.getToken(), senhaToken.getSenha());
+        return resultado.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of("message", s))).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Token inválido")));
+    }
 
     /*
     @GetMapping

@@ -16,7 +16,8 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/cadastrar")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/confirmar-email")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/esqueci-senha")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/usuarios//validar-esqueci-senha")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/validar-esqueci-senha")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/registrar-nova-senha")).permitAll()
                         .anyRequest().authenticated());
 
         return http.build();
