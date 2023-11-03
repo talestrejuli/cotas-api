@@ -1,5 +1,6 @@
 package cotas.lamana.api.controller;
 
+import cotas.lamana.api.dto.EmailDTO;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.service.usuario.UsuarioService;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
@@ -12,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
@@ -63,14 +67,33 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/esqueci-senha")
-    public ResponseEntity<?> esqueciSenha(@RequestBody String email) {
+    @GetMapping("/validar-esqueci-senha")
+    public ResponseEntity<String> validarEsqueciSenha(@RequestParam String token, HttpServletResponse httpServletResponse) {
         try {
-            usuario_service.processarEsqueciSenha(email);
-            return ResponseEntity.ok("E-mail enviado com sucesso");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao enviar e-mail");
+            if (usuario_service.validarToken(token)) {
+                httpServletResponse.sendRedirect(domainUrl + "/#/redefinir-senha?token=" + token );
+                return ResponseEntity.ok().build();
+            } else {
+                httpServletResponse.sendRedirect(domainUrl + "/#/login");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token inválido");
+            }
+        } catch (TokenExpiradoException e) {
+            try {
+                httpServletResponse.sendRedirect(domainUrl + "/#/login");
+            } catch (IOException ioException) {
+                // Tratar erro de redirecionamento aqui
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token expirado");
+        } catch (IOException e) {
+            // Tratar erro de redirecionamento aqui
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao redirecionar");
         }
+    }
+
+    @PostMapping("/esqueci-senha")
+    public ResponseEntity<?> esqueciSenha(@RequestBody EmailDTO email) {
+        Optional<String> resultado = usuario_service.processarEsqueciSenha(email.getEmail());
+        return resultado.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of("message", s))).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "E-mail não cadastrado")));
     }
 
 

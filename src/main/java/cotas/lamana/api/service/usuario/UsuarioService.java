@@ -44,7 +44,7 @@ public class UsuarioService {
     @Value("${app.domaiApinUrl}")
     private String domaiApinUrl;
 
-    @Value("$(spring.mail.username}")
+    @Value("${app.emailRemetente}")
     private String emailRemetente;
 
     // Método para ler um arquivo HTML e retornar seu conteúdo como uma String
@@ -63,7 +63,7 @@ public class UsuarioService {
             String confirmacaoUrl = domaiApinUrl + "/usuarios/confirmar-email?token=" + token;
             htmlContent = htmlContent.replace("{confirmacaoUrl}", confirmacaoUrl);
 
-            email_service.sendMail(emailDestinatario, emailRemetente, "Confirmação de cadastro", htmlContent, true);
+            email_service.sendMail(emailDestinatario, emailRemetente, "[LAMANA] Confirmação de cadastro", htmlContent, true);
         } catch (IOException e) {
             // Loga o erro para depuração
             System.err.println("Ocorreu um erro ao ler o arquivo HTML ou enviar o e-mail: " + e.getMessage());
@@ -151,9 +151,9 @@ public class UsuarioService {
         }
     }
 
-    public void processarEsqueciSenha(String email) throws EmailNaoEncontradoException {
+    public Optional<String> processarEsqueciSenha(String email) {
         // Verifica se o e-mail está cadastrado no banco de dados
-        Optional<Usuario> optionalUsuario = repository.findByToken(email);
+        Optional<Usuario> optionalUsuario = repository.findByEmail(email);
         if (optionalUsuario.isPresent()) {
             Usuario usuario = optionalUsuario.get();
 
@@ -176,8 +176,10 @@ public class UsuarioService {
             // Envia o e-mail de redefinição de senha
             enviarEmailDeRedefinicaoSenha(email, resetToken);
 
-        } else  {
-            throw new EmailNaoEncontradoException("E-mail não cadastrado");
+            return Optional.of("E-mail enviado com sucesso");
+
+        } else {
+            return Optional.empty();
         }
 
     }
@@ -186,11 +188,12 @@ public class UsuarioService {
         try {
             String htmlContent = readHtmlFile("templates/reset-password-email-template.html");
 
-            String resetUrl = domaiApinUrl + "/usuarios/resetar-senha?token=" + token;
-            htmlContent = htmlContent.replace("{resetUrl}", resetUrl);
+            String confirmacaoUrl = domaiApinUrl + "/usuarios/validar-esqueci-senha?token=" + token;
+            htmlContent = htmlContent.replace("{confirmacaoUrl}", confirmacaoUrl);
 
-            email_service.sendMail(emailDestinatario, emailRemetente , "Redefinição de Senha", htmlContent, true);
+            email_service.sendMail(emailDestinatario, emailRemetente, "[LAMANA] Redefinição de senha", htmlContent, true);
         } catch (IOException e) {
+            // Loga o erro para depuração
             System.err.println("Ocorreu um erro ao ler o arquivo HTML ou enviar o e-mail: " + e.getMessage());
         }
     }
