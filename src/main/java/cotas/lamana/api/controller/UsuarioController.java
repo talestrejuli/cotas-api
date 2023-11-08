@@ -2,6 +2,7 @@ package cotas.lamana.api.controller;
 
 import cotas.lamana.api.dto.EmailDTO;
 import cotas.lamana.api.dto.EsqueciSenhaRequestDTO;
+import cotas.lamana.api.dto.LoginDto;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.service.usuario.UsuarioService;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
@@ -104,14 +105,18 @@ public class UsuarioController {
         return resultado.<ResponseEntity<?>>map(s -> ResponseEntity.ok(Map.of("message", s))).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Token inválido")));
     }
 
-    /*
-    @GetMapping
-    @RequestMapping("/logar")
-    public void realizarLogin(@RequestBody @Valid DadosCadastroUsuario dados) {
-        usuario_service.realizarLogin();
+    @PostMapping("/login")
+    public ResponseEntity<?> loginEmail(@RequestBody LoginDto loginDto) {
+        return usuario_service.realizarLoginEmail(loginDto.getEmail(), loginDto.getSenha());
+    }
+/*
+    @PostMapping
+    @RequestMapping("/login-matricula")
+    public void loginMatricula(@RequestBody @Valid String email, String senha) {
+        usuario_service.realizarLoginMatricula(email, senha);
 
     }
+*/
 
-     */
 
 }

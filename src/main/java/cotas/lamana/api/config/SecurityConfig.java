@@ -18,6 +18,8 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/esqueci-senha")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/validar-esqueci-senha")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/usuarios/registrar-nova-senha")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/login")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/usuarios/login-matricula")).permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

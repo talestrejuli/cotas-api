@@ -1,6 +1,7 @@
 package cotas.lamana.api.service.usuario;
 
 // Importações necessárias
+import ch.qos.logback.core.net.SyslogOutputStream;
 import cotas.lamana.api.service.email.EnviarEmailService;
 import cotas.lamana.api.service.exceptions.TokenExpiradoException;
 import cotas.lamana.api.usuario.DadosCadastroUsuario;
@@ -12,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -23,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
@@ -231,19 +235,30 @@ public class UsuarioService {
         }
     }
 
-    /*
-    // Método para realizar o login (comentado no momento)
-    public ResponseEntity<?> realizarLogin (String email, String senha) {
-        Optional<Usuario> optionalUsuario = repository.findByEmail(email);
-        if (optionalUsuario.isPresent()) {
-            Usuario usuario = optionalUsuario.get();
-            if (passwordEncoder.matches(senha, usuario.getSenha())) {
-                // A senha está correta
-                // Aqui você pode criar e retornar um token JWT, por exemplo.
-                return ResponseEntity.ok("Login realizado com sucesso");
+
+    // Método para realizar o login
+    public ResponseEntity<?> realizarLoginEmail(String emailUsuario, String senhaUsuario) {
+        Optional<Usuario> usuarioBanco = repository.findByEmail(emailUsuario);
+
+        if (usuarioBanco.isPresent()) {
+            Usuario usuario = usuarioBanco.get();
+            BCryptPasswordEncoder criptografar = new BCryptPasswordEncoder();
+
+            // Aqui você compara a senha fornecida com a senha criptografada armazenada
+            if (criptografar.matches(senhaUsuario, usuario.getSenha())) {
+                // Se as senhas coincidirem, retorne sucesso
+
+                return new ResponseEntity<>(Collections.singletonMap("message", "Login realizado com sucesso"), HttpStatus.OK);
+            } else {
+                // Se as senhas não coincidirem, retorne não autorizado
+                return new ResponseEntity<>(Collections.singletonMap("message", "Senha inválida"), HttpStatus.UNAUTHORIZED);
             }
+        } else {
+            // Se o usuário não for encontrado, retorne não autorizado
+            return new ResponseEntity<>(Collections.singletonMap("message", "Usuário não encontrado"), HttpStatus.UNAUTHORIZED);
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("E-mail ou senha inválidos");
+
+        // Este retorno pode ser removido, pois os casos acima já cobrem todas as possibilidades
     }
-    */
+
 }
